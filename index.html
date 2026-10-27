@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a1220">
+<title>Бюджетный детектив</title>
+<style>
+:root{
+ --bg:#09111e;--panel:#111d30;--panel2:#172740;
+ --line:#2b3c55;--gold:#f3c969;--muted:#aab7ca;
+ --white:#f6f7fb;--green:#5cdaa1;--red:#ff838a
+}
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:radial-gradient(ellipse at 50% -20%,#243958 0,transparent 55%),var(--bg);
+ color:var(--white);
+ font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid white;outline-offset:3px}
+.wrap{max-width:1050px;margin:auto;padding:22px 18px 50px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:36px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:850;line-height:1.15}
+.logo{
+ display:grid;place-items:center;width:46px;height:46px;border-radius:14px;
+ background:#332b1b;border:1px solid #78643a;font-size:24px
+}
+.pill{font-size:12px;letter-spacing:.7px;color:var(--gold);border:1px solid #695734;border-radius:99px;padding:7px 12px}
+.screen{display:none}
+.screen.active{display:block;animation:up .25s ease}
+@keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.kicker{color:var(--gold);font-size:12px;font-weight:850;letter-spacing:2px;text-transform:uppercase;margin-bottom:13px}
+h1{font-size:clamp(38px,7vw,68px);line-height:1.02;letter-spacing:-2px;margin:0 0 20px}
+h1 em{font-style:normal;color:var(--gold)}
+h2{font-size:clamp(23px,4vw,33px);line-height:1.25;margin:0 0 17px}
+p{color:var(--muted);line-height:1.75}
+.hero{padding:25px 0 10px;max-width:760px}
+.hero p{font-size:17px;max-width:680px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0}
+.stat,.case,.panel{border:1px solid var(--line);background:linear-gradient(145deg,#15243a,#101b2c);border-radius:17px}
+.stat{padding:18px}
+.stat strong{display:block;color:var(--gold);font-size:26px}
+.stat span{font-size:12px;color:var(--muted)}
+.btn{border:0;border-radius:12px;padding:14px 19px;font-weight:800;transition:.15s}
+.primary{background:var(--gold);color:#201809}
+.primary:hover{background:#ffdc8b;transform:translateY(-1px)}
+.secondary{background:var(--panel2);color:var(--white);border:1px solid var(--line)}
+.secondary:hover{border-color:var(--gold)}
+.wide{width:100%}
+.smallnote{font-size:12px;color:#8798b0;margin-top:13px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:34px 0 15px}
+.section-head h2{font-size:23px;margin:0}
+.case-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}
+.case{padding:20px;display:flex;flex-direction:column;min-height:190px}
+.case-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.case-icon{font-size:26px}
+.case-no{font-size:11px;color:var(--gold);letter-spacing:1px}
+.case h3{font-size:19px;margin:0 0 7px}
+.case p{font-size:13px;margin:0 0 17px;flex:1}
+.case button{align-self:stretch}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+.subtle{color:var(--muted);font-size:13px}
+.score{padding:8px 13px;border-radius:99px;background:#23344d;font-size:13px;white-space:nowrap}
+.track{height:6px;background:#26354a;border-radius:99px;overflow:hidden;margin-bottom:22px}
+.fill{height:100%;width:0;background:var(--gold);transition:width .3s}
+.question-panel{padding:clamp(20px,4vw,32px)}
+.case-label{color:var(--gold);font-size:12px;font-weight:850;letter-spacing:1px;margin-bottom:12px}
+.evidence{background:#0b1626;border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:14px 16px;color:#c9d4e4;font-size:14px;margin:18px 0 22px}
+.answers{display:grid;gap:10px}
+.answer{display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;padding:14px;border:1px solid #33455f;border-radius:12px;background:#17263b;color:var(--white);line-height:1.5}
+.answer:hover:not(:disabled){border-color:var(--gold);background:#20324b}
+.answer:disabled{cursor:default}
+.letter{flex:0 0 28px;height:28px;display:grid;place-items:center;border:1px solid #53637a;border-radius:8px;color:var(--gold);font-size:12px;font-weight:850}
+.answer.correct{border-color:var(--green);background:#12372f}
+.answer.correct .letter{color:var(--green);border-color:var(--green)}
+.answer.wrong{border-color:var(--red);background:#3a202b}
+.answer.wrong .letter{color:var(--red);border-color:var(--red)}
+.feedback{display:none;padding:16px;border-radius:12px;margin-top:17px;font-size:14px;line-height:1.7}
+.feedback.show{display:block}
+.feedback.good{background:#12372f;border:1px solid #286e58}
+.feedback.bad{background:#33232c;border:1px solid #76414b}
+.feedback strong{display:block;margin-bottom:6px}
+.actions{display:flex;gap:10px;margin-top:18px}
+.actions button{flex:1}
+.result{text-align:center;padding:clamp(23px,5vw,42px)}
+.result-icon{font-size:56px}
+.bigscore{font-size:78px;font-weight:900;color:var(--gold);line-height:1.2}
+.resultstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:24px 0}
+.resultstats div{background:#0c1728;border-radius:12px;padding:15px 8px}
+.resultstats strong{display:block;color:var(--gold);font-size:23px}
+.resultstats span{font-size:12px;color:var(--muted)}
+.review{text-align:left;margin-top:28px}
+.review-item{border-top:1px solid var(--line);padding:14px 0}
+.review-item strong{display:block;margin-bottom:5px}
+.review-item span{color:var(--muted);font-size:13px}
+.footer{text-align:center;color:#71839c;font-size:12px;margin-top:35px}
+@media(max-width:620px){
+ .wrap{padding:17px 13px 35px}
+ header{margin-bottom:22px}
+ .pill{font-size:10px}
+ .stats{gap:8px}
+ .stat{padding:12px 9px}
+ .stat strong{font-size:21px}
+ .case-grid{grid-template-columns:1fr}
+ .case{min-height:0}
+ .actions{flex-direction:column}
+ .bigscore{font-size:64px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+ <div class="brand">
+  <div class="logo">🕵️</div>
+  <div>Бюджетный<br>детектив</div>
+ </div>
+ <div class="pill">ИНТЕРАКТИВНОЕ РАССЛЕДОВАНИЕ</div>
+</header>
+
+<section id="home" class="screen active">
+ <div class="hero">
+  <div class="kicker">Финансовое дело № 001</div>
+  <h1>Деньги любят<br><em>точность.</em></h1>
+  <p>Бюджетные цифры не всегда рассказывают всю историю. Проверь документы, вычисли отклонения и выясни, куда направляются государственные средства. Каждая улика — задача из мира общественных финансов.</p>
+ </div>
+
+ <div class="stats">
+  <div class="stat"><strong>5 дел</strong><span>от доходов до города будущего</span></div>
+  <div class="stat"><strong>20 вопросов</strong><span>расчёты и ситуации</span></div>
+  <div class="stat"><strong>20 баллов</strong><span>за точность расследования</span></div>
+ </div>
+
+ <button class="btn primary wide" onclick="showCases()">Открыть список дел →</button>
+ <p class="smallnote">Учебная игра. Суммы в задачах условные, если не указано иное.</p>
+
+ <div class="section-head">
+  <h2>Досье расследований</h2>
+  <span class="subtle">5 тематических уровней</span>
+ </div>
+ <div class="case-grid" id="caseGrid"></div>
+</section>
+
+<section id="game" class="screen">
+ <div class="topline">
+  <button class="btn secondary" onclick="showCases()">← Все дела</button>
+  <div class="score">Баллы: <strong id="score">0</strong></div>
+ </div>
+ <div class="topline">
+  <div class="case-label" id="caseLabel">ДЕЛО 01</div>
+  <div class="subtle" id="counter">Вопрос 1 из 4</div>
+ </div>
+ <div class="track"><div class="fill" id="progress"></div></div>
+
+ <div class="panel question-panel">
+  <div class="case-label" id="category"></div>
+  <h2 id="question"></h2>
+  <div class="evidence" id="evidence"></div>
+  <div class="answers" id="answers"></div>
+  <div id="feedback" class="feedback" aria-live="polite"></div>
+  <div class="actions">
+   <button class="btn secondary" onclick="showCases()">К делам</button>
+   <button class="btn primary" id="next" onclick="nextQuestion()" disabled>Следующая улика →</button>
+  </div>
+ </div>
+</section>
+
+<section id="result" class="panel result screen">
+ <div class="result-icon" id="resultIcon">🔎</div>
+ <div class="kicker">ДЕЛО ЗАВЕРШЕНО</div>
+ <h2 id="resultTitle">Результат</h2>
+ <div class="bigscore"><span id="finalScore">0</span><span style="font-size:23px;color:var(--muted)"> / 4</span></div>
+ <p id="resultMessage"></p>
+
+ <div class="resultstats">
+  <div><strong id="correctCount">0</strong><span>верных ответов</span></div>
+  <div><strong id="wrongCount">0</strong><span>ошибок</span></div>
+  <div><strong id="percent">0%</strong><span>точность</span></div>
+ </div>
+
+ <button class="btn primary wide" onclick="showCases()">Выбрать следующее дело →</button>
+ <div class="review">
+  <h2 style="font-size:22px">Разбор улик</h2>
+  <div id="reviewList"></div>
+ </div>
+</section>
+
+<div class="footer">Бюджетный детектив · Проверяй источники. Считай внимательно. Задавай вопросы.</div>
+</div>
+
+<script>
+const cases = [
+ {title:"Откуда деньги?",icon:"💰",desc:"Доходы бюджета, налоги и финансовые источники.",range:[0,4]},
+ {title:"Куда всё потратили?",icon:"📊",desc:"Расходы, структура бюджета и эффективность программ.",range:[4,8]},
+ {title:"Кто принимает решения?",icon:"🏛️",desc:"Бюджетный процесс, казначейство и контроль.",range:[8,12]},
+ {title:"Бюджет под подозрением",icon:"🔍",desc:"Проверка данных, дефицит и источники финансирования.",range:[12,16]},
+ {title:"Город будущего",icon:"🌆",desc:"Сложные решения, приоритеты и бюджетные риски.",range:[16,20]}
+];
+
+const questions = [
+{
+ c:0,cat:"ДОХОДЫ · РАСЧЁТ",
+ q:"План налоговых доходов — 120 млрд ₽, фактически поступило 138 млрд ₽. На сколько процентов исполнен план?",
+ e:"Формула: факт / план × 100%.",
+ a:["115%","18%","120%","138%"],k:0,
+ x:"138 / 120 × 100% = 115%. План перевыполнен на 15%. Не путай процент исполнения плана и процент превышения."
+},
+{
+ c:0,cat:"ДОХОДЫ · КЛАССИФИКАЦИЯ",
+ q:"Какой из перечисленных платежей относится к налоговым доходам бюджета?",
+ e:"Доходы бюджета включают налоговые и неналоговые доходы, а также безвозмездные поступления.",
+ a:["Плата за аренду государственного имущества","Налог на доходы физических лиц","Штраф за нарушение договора","Безвозмездный перевод"],k:1,
+ x:"НДФЛ — налоговый доход. Арендная плата и штрафы относятся к неналоговым доходам, а безвозмездные поступления образуют отдельную категорию."
+},
+{
+ c:0,cat:"ДОХОДЫ · ДИНАМИКА",
+ q:"Доходы бюджета выросли с 250 млрд ₽ до 280 млрд ₽. Каков темп прироста?",
+ e:"Темп прироста = (новое значение − старое) / старое × 100%.",
+ a:["12%","30%","112%","8,3%"],k:0,
+ x:"(280 − 250) / 250 × 100% = 12%. Темп роста составил бы 112%, а темп прироста — 12%."
+},
+{
+ c:0,cat:"ДОХОДЫ · АНАЛИЗ РИСКОВ",
+ q:"Регион сильно зависит от налогов одного крупного предприятия. Предприятие остановило производство. Какой риск возникает первым?",
+ e:"Оцени влияние изменения экономической активности на налоговую базу.",
+ a:["Доходы гарантированно удвоятся","Могут снизиться связанные с предприятием налоговые поступления","Расходы автоматически исчезнут","Долг автоматически станет нулевым"],k:1,
+ x:"Снижение производства может уменьшить прибыль, фонд оплаты труда и другие налоговые базы. Концентрация доходов в одном источнике повышает бюджетный риск."
+},
+{
+ c:1,cat:"РАСХОДЫ · СТРУКТУРА",
+ q:"Расходы бюджета — 500 млрд ₽. На образование направлено 125 млрд ₽. Какова доля образования?",
+ e:"Доля статьи = сумма статьи / общий объём расходов × 100%.",
+ a:["20%","25%","40%","125%"],k:1,
+ x:"125 / 500 × 100% = 25%. Четверть всех расходов приходится на образование."
+},
+{
+ c:1,cat:"РАСХОДЫ · ОТКЛОНЕНИЕ",
+ q:"На программу планировали 48 млн ₽, фактически потратили 42 млн ₽. Каково относительное отклонение от плана?",
+ e:"(Факт − план) / план × 100%.",
+ a:["−12,5%","−6%","+12,5%","+6%"],k:0,
+ x:"(42 − 48) / 48 × 100% = −12,5%. Расходы ниже плана на 6 млн ₽, или на 12,5%. Это не доказывает эффективность без проверки результата."
+},
+{
+ c:1,cat:"РАСХОДЫ · ЭФФЕКТИВНОСТЬ",
+ q:"Две программы потратили одинаковые суммы. Первая отремонтировала 10 школ, вторая — 15 школ сопоставимого размера и состояния. Что сравнить в первую очередь?",
+ e:"Предположим, качество работ и условия реализации сопоставимы.",
+ a:["Только общую сумму расходов","Расходы на одну отремонтированную школу","Число сотрудников ведомства","Количество страниц отчёта"],k:1,
+ x:"Расходы на единицу результата помогают сравнить стоимость достижения результата. Для полноценного вывода также оценивают качество и сроки."
+},
+{
+ c:1,cat:"РАСХОДЫ · РЕАЛЬНЫЙ РОСТ",
+ q:"Номинальные расходы выросли на 12%, цены — на 8%. Как изменились расходы в реальном выражении примерно?",
+ e:"Точный расчёт: (1 + номинальный рост) / (1 + рост цен) − 1.",
+ a:["Сократились примерно на 4%","Выросли примерно на 3,7%","Выросли на 12%","Не изменились"],k:1,
+ x:"(1,12 / 1,08 − 1) × 100% ≈ 3,7%. Приближённая оценка 12% − 8% = 4 процентных пункта."
+},
+{
+ c:2,cat:"БЮДЖЕТНЫЙ ПРОЦЕСС",
+ q:"Какой орган вносит проект федерального бюджета в Государственную Думу?",
+ e:"Различай подготовку проекта, его рассмотрение и исполнение бюджета.",
+ a:["Счётная палата РФ","Банк России","Правительство РФ","Федеральное казначейство"],k:2,
+ x:"Правительство РФ разрабатывает и вносит проект федерального бюджета в Государственную Думу. Дума рассматривает и принимает закон о бюджете."
+},
+{
+ c:2,cat:"МЕЖБЮДЖЕТНЫЕ ТРАНСФЕРТЫ",
+ q:"Регион получает средства из федерального бюджета без целевого назначения. Какой вид трансферта соответствует описанию?",
+ e:"Ключевая улика — отсутствие требования направить деньги на конкретную цель.",
+ a:["Субвенция","Субсидия","Дотация","Государственная пошлина"],k:2,
+ x:"Дотация предоставляется без установления конкретного направления использования. Субсидия имеет целевое назначение, субвенция связана с исполнением переданных полномочий."
+},
+{
+ c:2,cat:"МЕЖБЮДЖЕТНЫЕ ТРАНСФЕРТЫ",
+ q:"Федеральный бюджет передал региону средства на исполнение переданных государственных полномочий. Какой трансферт обычно используется?",
+ e:"Отличай поддержку бюджета в целом от финансирования переданных полномочий.",
+ a:["Дотация","Субвенция","Налоговый доход","Государственный кредит"],k:1,
+ x:"Субвенции предоставляются для финансового обеспечения расходных обязательств, возникающих при исполнении переданных полномочий."
+},
+{
+ c:2,cat:"КОНТРОЛЬ",
+ q:"Какой орган является высшим органом внешнего государственного аудита (контроля) в России?",
+ e:"Не путай внешний аудит с непосредственным казначейским обслуживанием.",
+ a:["Федеральное казначейство","Счётная палата РФ","Банк России","Государственная Дума"],k:1,
+ x:"Счётная палата РФ — высший орган внешнего государственного аудита (контроля). Она проверяет использование государственных средств в рамках своих полномочий."
+},
+{
+ c:3,cat:"БАЛАНС БЮДЖЕТА",
+ q:"Доходы региона — 84 млрд ₽, расходы — 91 млрд ₽. Каков результат исполнения бюджета?",
+ e:"Сравни расходы и доходы: их разница определяет дефицит или профицит.",
+ a:["Профицит 7 млрд ₽","Дефицит 7 млрд ₽","Дефицит 175 млрд ₽","Баланс без дефицита"],k:1,
+ x:"91 − 84 = 7 млрд ₽. Поскольку расходы выше доходов, возникает дефицит бюджета."
+},
+{
+ c:3,cat:"ФИНАНСИРОВАНИЕ ДЕФИЦИТА",
+ q:"Какой вариант в принципе может быть источником финансирования дефицита бюджета?",
+ e:"Источники финансирования дефицита учитываются отдельно от доходов бюджета.",
+ a:["Расходы на образование","Выпуск государственных ценных бумаг","Любое увеличение расходов","Начисление амортизации частной компании"],k:1,
+ x:"Государственные заимствования, в том числе выпуск облигаций, могут быть источниками финансирования дефицита. Доходы и источники финансирования — разные категории."
+},
+{
+ c:3,cat:"ГОСУДАРСТВЕННЫЙ ДОЛГ",
+ q:"Государство разместило облигации, чтобы привлечь деньги. Что означает эта операция?",
+ e:"Облигация удостоверяет долговое обязательство эмитента перед владельцем.",
+ a:["Налоговый доход, который не нужно возвращать","Государственное заимствование","Безвозмездная субсидия","Автоматическое сокращение долга"],k:1,
+ x:"Размещение государственных облигаций — способ заимствования. Полученные средства могут финансировать дефицит, а долг требует обслуживания и погашения."
+},
+{
+ c:3,cat:"ПРОВЕРКА ДАННЫХ",
+ q:"В таблице указаны крупные расходы, но нет даты, единиц измерения и ссылки на источник. Как поступить?",
+ e:"Публикация красивой диаграммы сама по себе не подтверждает достоверность данных.",
+ a:["Сразу считать данные достоверными","Сразу объявить данные ложными","Найти первичный источник, период и методику","Сравнить только цвета диаграммы"],k:2,
+ x:"Нужно проверить происхождение данных, дату, период, единицы измерения и методику. Без этого надёжный вывод невозможен."
+},
+{
+ c:4,cat:"ГОРОД БУДУЩЕГО · ВЫБОР",
+ q:"У города есть 100 млн ₽ на развитие. Мост аварийный, школа переполнена, а парк требует обновления. Какой подход к распределению средств наиболее обоснован?",
+ e:"В реальном бюджетировании важно сопоставить безопасность, срочность, число затронутых жителей, стоимость и альтернативы.",
+ a:["Всё направить на парк, потому что он заметнее","Распределить деньги поровну без анализа","Оценить риски и обязательства, рассчитать варианты и обосновать приоритеты","Выбрать проект с самой красивой презентацией"],k:2,
+ x:"Обоснованное решение учитывает безопасность, обязательные расходы, число жителей, стоимость, сроки и ожидаемый эффект. Универсального распределения без анализа нет."
+},
+{
+ c:4,cat:"ГОРОД БУДУЩЕГО · СОФИНАНСИРОВАНИЕ",
+ q:"Проект стоит 40 млн ₽. Региональная субсидия покрывает 75% стоимости, остальное должен внести город. Сколько нужно городу?",
+ e:"Сначала рассчитай долю, не покрываемую субсидией.",
+ a:["10 млн ₽","15 млн ₽","30 млн ₽","35 млн ₽"],k:0,
+ x:"Город оплачивает 25% стоимости: 40 × 0,25 = 10 млн ₽. Перед решением также проверяют условия предоставления субсидии."
+},
+{
+ c:4,cat:"ГОРОД БУДУЩЕГО · ВЫБОР ПОКАЗАТЕЛЯ",
+ q:"Город потратил больше средств на общественный транспорт, но число пассажиров не изменилось. Какой вывод наиболее корректен?",
+ e:"Расходы — это ресурсы, а число пассажиров — один из возможных результатов.",
+ a:["Программа точно успешна, потому что расходы выросли","Нужно оценить цели, качество, доступность, затраты и причины отсутствия роста","Нужно немедленно закрыть транспорт","Само увеличение расходов доказывает эффективность"],k:1,
+ x:"Рост расходов сам по себе не доказывает успех. Нужно изучить цели, качество услуг, охват, стоимость результата и возможные внешние факторы."
+},
+{
+ c:4,cat:"ФИНАЛЬНАЯ УЛИКА · ПРОЗРАЧНОСТЬ",
+ q:"Программа полностью освоила выделенные средства, но запланированные объекты не построены. Какой вывод верен?",
+ e:"Финансовое освоение и достижение общественного результата — разные вещи.",
+ a:["Программа автоматически эффективна","Полное освоение доказывает достижение целей","Нужно проверить результаты, сроки, причины срыва и обоснованность расходов","Контроль больше не нужен"],k:2,
+ x:"Полное расходование средств не гарантирует эффективности. Необходимо оценить достижение целей, сроки, причины отклонений и законность расходов."
+}
+];
+
+let currentCase=0;
+let currentIndex=0;
+let score=0;
+let correct=0;
+let history=[];
+let locked=false;
+
+function show(id){
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showCases(){
+ show('home');
+}
+
+function buildCases(){
+ const grid=document.getElementById('caseGrid');
+ grid.innerHTML='';
+ cases.forEach((c,i)=>{
+  const el=document.createElement('article');
+  el.className='case';
+  el.innerHTML=`
+   <div class="case-top">
+    <span class="case-icon">${c.icon}</span>
+    <span class="case-no">ДЕЛО 0${i+1}</span>
+   </div>
+   <h3>${c.title}</h3>
+   <p>${c.desc}</p>
+   <button class="btn secondary">Начать дело →</button>`;
+  el.querySelector('button').onclick=()=>startCase(i);
+  grid.appendChild(el);
+ });
+}
+
+function startCase(i){
+ currentCase=i;
+ currentIndex=cases[i].range[0];
+ score=0;
+ correct=0;
+ history=[];
+ show('game');
+ render();
+}
+
+function render(){
+ locked=false;
+ const q=questions[currentIndex];
+ const range=cases[currentCase].range;
+ const number=currentIndex-range[0]+1;
+
+ document.getElementById('score').textContent=score;
+ document.getElementById('caseLabel').textContent=
+  `ДЕЛО 0${currentCase+1} · ${cases[currentCase].title.toUpperCase()}`;
+ document.getElementById('counter').textContent=`Вопрос ${number} из 4`;
+ document.getElementById('category').textContent=q.cat;
+ document.getElementById('question').textContent=q.q;
+ document.getElementById('evidence').textContent='🗂 Улика: '+q.e;
+ document.getElementById('progress').style.width=((number-1)/4*100)+'%';
+
+ const fb=document.getElementById('feedback');
+ fb.className='feedback';
+ fb.innerHTML='';
+
+ const next=document.getElementById('next');
+ next.disabled=true;
+ next.textContent=number===4?'Завершить дело →':'Следующая улика →';
+
+ const box=document.getElementById('answers');
+ box.innerHTML='';
+
+ q.a.forEach((txt,i)=>{
+  const b=document.createElement('button');
+  b.className='answer';
+
+  const letter=document.createElement('span');
+  letter.className='letter';
+  letter.textContent=String.fromCharCode(65+i);
+
+  const text=document.createElement('span');
+  text.textContent=txt;
+
+  b.append(letter,text);
+  b.onclick=()=>choose(i);
+  box.appendChild(b);
+ });
+}
+
+function choose(i){
+ if(locked)return;
+ locked=true;
+
+ const q=questions[currentIndex];
+ const ok=i===q.k;
+ const buttons=[...document.querySelectorAll('.answer')];
+
+ buttons.forEach((b,n)=>{
+  b.disabled=true;
+  if(n===q.k)b.classList.add('correct');
+  if(n===i&&!ok)b.classList.add('wrong');
+ });
+
+ if(ok){
+  score++;
+  correct++;
+ }
+
+ document.getElementById('score').textContent=score;
+ const range=cases[currentCase].range;
+ const number=currentIndex-range[0]+1;
+ document.getElementById('progress').style.width=(number/4*100)+'%';
+
+ const fb=document.getElementById('feedback');
+ fb.className='feedback show '+(ok?'good':'bad');
+
+ const strong=document.createElement('strong');
+ strong.textContent=ok?'✓ Верно! +1 балл':'✕ Правильный ответ: '+q.a[q.k];
+
+ const p=document.createElement('div');
+ p.textContent=q.x;
+
+ fb.append(strong,p);
+
+ history.push({
+  q:q.q,
+  ok:ok,
+  answer:q.a[q.k],
+  explanation:q.x
+ });
+
+ document.getElementById('next').disabled=false;
+}
+
+function nextQuestion(){
+ if(!locked)return;
+
+ const end=cases[currentCase].range[1];
+
+ if(currentIndex<end-1){
+  currentIndex++;
+  render();
+ }else{
+  finish();
+ }
+}
+
+function finish(){
+ show('result');
+
+ document.getElementById('finalScore').textContent=score;
+ document.getElementById('correctCount').textContent=correct;
+ document.getElementById('wrongCount').textContent=4-correct;
+ document.getElementById('percent').textContent=Math.round(correct/4*100)+'%';
+
+ let icon='🗂️';
+ let title='Расследование продолжается';
+ let msg='Разбери ошибки и попробуй снова — практика помогает замечать финансовые детали.';
+
+ if(correct===4){
+  icon='🏆';
+  title='Дело раскрыто без ошибок!';
+  msg='Отличная работа: ты внимательно проверил все улики и верно разобрался в этом деле.';
+ }else if(correct>=3){
+  icon='🔎';
+  title='Опытный следователь';
+  msg='Хороший результат. Посмотри объяснения к вопросам, где ошибся, и переходи к следующему делу.';
+ }
+
+ document.getElementById('resultIcon').textContent=icon;
+ document.getElementById('resultTitle').textContent=title;
+ document.getElementById('resultMessage').textContent=msg;
+
+ const list=document.getElementById('reviewList');
+ list.innerHTML='';
+
+ history.forEach((h,i)=>{
+  const d=document.createElement('div');
+  d.className='review-item';
+
+  const s=document.createElement('strong');
+  s.textContent=(h.ok?'✓ ':'✕ ')+(i+1)+'. '+h.q;
+
+  const span=document.createElement('span');
+  span.textContent='Ответ: '+h.answer+'. '+h.explanation;
+
+  d.append(s,span);
+  list.appendChild(d);
+ });
+}
+
+buildCases();
+</script>
+</body>
+</html>
